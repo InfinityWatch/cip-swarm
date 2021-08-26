@@ -6,50 +6,17 @@ if [[ $(/usr/bin/id -u) -ne 0 ]]; then
     exit
 fi
 
-################################
-###### Container Versions ######
-################################
-dokuwiki_ver=latest
-drawio_ver=latest
-ethercalc_ver=latest
-ethercalc_redis_ver=latest
-etherpad_ver=latest
-etherpad_mysql_ver=5.7
-gitea_ver=latest
-gitea_mysql_ver=5.7
-heimdall_ver=latest
-homer_ver=latest
-nginx_ver=latest
-owncloud_ver=9
-owncloud_mariadb_ver=latest
-pihole_ver=latest
-portainer_ver=latest
-rocketchat_ver=latest
-rocketchat_mongo_ver=4.0
-vaultwarden_ver=latest
+# Set your IP address as a variable. This is for instructions below.
+IP="$(hostname -I | sed -e 's/[[:space:]]*$//' | awk '{print $1}')"
 
-################################
-########## Containers ##########
-################################
+# Update your Host file
+echo -e "${IP} ${HOSTNAME}" | tee -a /etc/hosts
 
-dokuwiki=ghcr.io/linuxserver/dokuwiki:${dokuwiki_ver}
-drawio=fjudith/draw.io:${drawio_ver}
-ethercalc=audreyt/ethercalc:${ethercalc_ver}
-ethercalc_redis=redis:${ethercalc_redis_ver}
-etherpad=tvelocity/etherpad-lite:${etherpad_ver}
-etherpad_mysql=mysql:${etherpad_mysql_ver}
-gitea=gitea/gitea:${gitea_ver}
-gitea_mysql=mysql:${gitea_mysql_ver}
-heimdall=linuxserver/heimdall:${heimdall_ver}
-homer=b4bz/homer:${homer_ver}
-nginx=nginx:${nginx_ver}
-owncloud=owncloud:${owncloud_ver}
-owncloud_mariadb=mariadb:${owncloud_mariadb_ver}
-pihole=pihole/pihole:${pihole_ver}
-portainer=portainer/portainer:${portainer_ver}
-rocketchat=registry.rocket.chat/rocketchat/rocket.chat:${rocketchat_ver}
-rocketchat_mongo=mongo:${rocketchat_mongo_ver}
-vaultwarden=vaultwarden/server:${vaultwarden_ver}
+# Custom domain; default is wapes.local
+DOMAIN=wapes.local
+
+# Pihole custom lists
+CUSTOM_LIST=/var/lib/docker/volumes/pihole/_data/custom.list
 
 ################################
 ##### Credential Creation ######
@@ -102,17 +69,6 @@ echo "Detecting Base OS"
 
 	echo "Found OS: $OS $OSVER"
 
-# Set your IP address as a variable. This is for instructions below.
-IP="$(hostname -I | sed -e 's/[[:space:]]*$//' | awk '{print $1}')"
-
-# Update your Host file
-echo -e "${IP} ${HOSTNAME}" | tee -a /etc/hosts
-
-# Custom domain; default is wapes.local
-DOMAIN=wapes.local
-
-# Pihole custom lists
-CUSTOM_LIST=/var/lib/docker/volumes/pihole/_data/custom.list
 
 # Set custom settings in nginx.conf
 sed -i "s/DOMAINNAME/${DOMAIN}/g" nginx/nginx.conf
