@@ -6,6 +6,10 @@ if [[ $(/usr/bin/id -u) -ne 0 ]]; then
     exit
 fi
 
+#####################################
+#### Random Automation Variables ####
+#####################################
+
 # Set your IP address as a variable. This is for instructions below.
 IP="$(hostname -I | sed -e 's/[[:space:]]*$//' | awk '{print $1}')"
 
@@ -17,26 +21,6 @@ DOMAIN=wapes.local
 
 # Pihole custom lists
 CUSTOM_LIST=/var/lib/docker/volumes/pihole/_data/custom.list
-
-################################
-##### Credential Creation ######
-################################
-
-# Create passphrases and set them as variables
-etherpad_user_passphrase=$(head -c 100 /dev/urandom | sha256sum | base64 | head -c 32)
-etherpad_mysql_passphrase=$(head -c 100 /dev/urandom | sha256sum | base64 | head -c 32)
-etherpad_admin_passphrase=$(head -c 100 /dev/urandom | sha256sum | base64 | head -c 32)
-gitea_mysql_passphrase=$(head -c 100 /dev/urandom | sha256sum | base64 | head -c 32)
-owncloud_mysql_root_passphrase=$(head -c 100 /dev/urandom | sha256sum | base64 | head -c 32)
-
-# Write the passphrases to a file for reference. You should store this securely in accordance with your local security policy.
-USER_HOME=$(getent passwd 1000 | cut -d':' -f6)
-for i in {etherpad_user_passphrase,etherpad_mysql_passphrase,etherpad_admin_passphrase,gitea_mysql_passphrase,owncloud_mysql_root_passphrase}; do echo "$i = ${!i}"; done > $USER_HOME/wapes_credentials.txt
-
-
-#####################################
-#### Random Automation Variables ####
-#####################################
 
 # Detect the Operating System
 echo "Detecting Base OS"
@@ -143,72 +127,13 @@ systemctl start docker.service
 
 # Create the WAPES network
 echo -e "\e[1;32mCreating WAPES Docker network\e[0m."
-network create --attachable --subnet 172.18.0.0/16 wapes
+network create --attachable --mode=swarm --subnet 172.18.0.0/16 wapes
 
 # Create Docker volumes
 echo -e "\e[1;32mCreating Docker volumes\e[0m."
 for i in {dokuwiki,etherpad,gitea,heimdall,mariadb_owncloud,mongo_rocketchat,mysql_etherpad,mysql_gitea,nginx,owncloud,pihole,pihole_dnsmasq,portainer,redis_ethercalc,rocketchat,vaultwarden}; do docker volume create $i; done
 
-# Pull the Docker images quietly
-echo -e "\e[1;32mPulling Docker images\e[0m."
-
-array=( ${dokuwiki} ${drawio} ${ethercalc_redis} ${ethercalc} ${etherpad_mysql} ${etherpad} ${gitea_mysql} ${gitea} ${heimdall} ${homer} ${owncloud_mariadb} ${owncloud} ${pihole} ${portainer} ${rocketchat_mongo} ${rocketchat} ${vaultwarden} ${nginx} )
-for i in ${array[@]}; do docker pull --quiet $i; done
-
-
-# Run the Docker containers
-echo -e "\e[1;32mRunning Docker containers\e[0m."
-# Dokuwiki Container
-docker run -d --network wapes --restart unless-stopped --name wapes-dokuwiki -v dokuwiki:/config:z -e PUID=1000 -e PGID=1000 -e TZ=Etc/UTC ${dokuwiki}
-
-# Draw.io Container
-docker run -d --network wapes --restart unless-stopped --name wapes-draw.io fjudith/draw.io:${drawio_ver}
-
-# Ethercalc Redis Container
-docker run -d --network wapes --restart unless-stopped --name wapes-ethercalc-redis -v redis_ethercalc:/data:z ${ethercalc_redis} redis-server --appendonly yes
-sleep 5
-# Ethercalc Container
-docker run -d --network wapes --restart unless-stopped --name wapes-ethercalc -e "REDIS_PORT_6379_TCP_ADDR=wapes-ethercalc-redis" -e "REDIS_PORT_6379_TCP_PORT=6379" ${ethercalc}
-
-# Etherpad MYSQL Container
-docker run -d --network wapes --restart unless-stopped --name wapes-etherpad-mysql -v mysql_etherpad:/var/lib/mysql:z -e "MYSQL_DATABASE=etherpad" -e "MYSQL_USER=etherpad" -e "MYSQL_PASSWORD=${etherpad_mysql_passphrase}" -e "MYSQL_RANDOM_ROOT_PASSWORD=yes" ${etherpad_mysql}
-# Etherpad Container
-docker run -d --network wapes --restart unless-stopped --name wapes-etherpad -v etherpad:/opt/etherpad-lite/var -e "ETHERPAD_TITLE=WAPES" -e "ETHERPAD_PORT=9001" -e "ETHERPAD_ADMIN_PASSWORD=${etherpad_admin_passphrase}" -e "ETHERPAD_ADMIN_USER=admin" -e "ETHERPAD_DB_TYPE=mysql" -e "ETHERPAD_DB_HOST=wapes-etherpad-mysql" -e "ETHERPAD_DB_USER=etherpad" -e "ETHERPAD_DB_PASSWORD=${etherpad_mysql_passphrase}" -e "ETHERPAD_DB_NAME=etherpad" ${etherpad}
-
-# Gitea MYSQL Container
-docker run -d --network wapes --restart unless-stopped --name wapes-gitea-mysql -v mysql_gitea:/var/lib/mysql:z -e "MYSQL_DATABASE=gitea" -e "MYSQL_USER=gitea" -e "MYSQL_PASSWORD=${gitea_mysql_passphrase}" -e "MYSQL_RANDOM_ROOT_PASSWORD=yes" ${gitea_mysql}
-# Gitea Container
-docker run -d --network wapes --restart unless-stopped --name wapes-gitea -v gitea:/data:z -e "DB_TYPE=mysql" -e "DB_HOST=wapes-gitea-mysql:3306" -e "DB_NAME=gitea" -e "DB_USER=gitea" -e "DB_PASSWD=${gitea_mysql_passphrase}" -p 8022:22 ${gitea}
-
-# Heimdall dashboard
-docker run -d --network wapes --restart unless-stopped --name wapes-heimdall -v heimdall:/config:z -e PUID=1001 -e PGID=1001 -e "TZ=Etc/UTC" ${heimdall}
-
-# Homer Container - will probably replace Heimdall
-docker run -d --network wapes --restart unless-stopped --name wapes-homer -v homer:/www/assets ${homer}
-
-# Owncloud MariaDB Container
-docker run -d --network wapes --restart unless-stopped --name wapes-owncloud-mariadb -v mariadb_owncloud:/var/lib/mysql -e "MYSQL_ROOT_PASSWORD=${owncloud_mysql_root_passphrase}" ${owncloud_mariadb}
-# Owncloud Container
-docker run -d --network wapes --restart unless-stopped --name wapes-owncloud -v owncloud:/var/www/html ${owncloud}
-
-# Pihole Container
-docker run -d --network wapes --restart unless-stopped --name wapes-pihole -v pihole:/etc/pihole:z -v pihole_dnsmasq:/etc/dnsmasq.d:z -e "TZ=Etc/UTC" -p 53:53/tcp -p 53:53/udp ${pihole}
-
-# Portainer Container
-docker run -d --network wapes --privileged --restart unless-stopped --name wapes-portainer -v portainer:/data:z  -v $(pwd)/portainer/ssl:/certs:z -v /var/run/docker.sock:/var/run/docker.sock -p 9000:9000 ${portainer} --ssl --sslcert /certs/portainer.crt --sslkey /certs/portainer.key --no-analytics
-
-# Rocket Chat MongoDB Container
-docker run -d --network wapes --restart unless-stopped --name wapes-rocketchat-mongo -v mongo_rocketchat:/data/db:z -v mongo_rocketchat:/data/configdb:z -v mongo_rocketchat:/dump:z ${rocketchat_mongo} mongod --smallfiles --oplogSize 128 --replSet rs1 --storageEngine=mmapv1
-sleep 5
-docker exec -d wapes-rocketchat-mongo bash -c 'echo -e "replication:\n  replSetName: \"rs01\"" | tee -a /etc/mongod.conf && mongo --eval "printjson(rs.initiate())"'
-# Rocket Chat Container
-docker run -d --network wapes --restart unless-stopped --name wapes-rocketchat --link wapes-rocketchat-mongo -v rocketchat:/app/uploads -e "MONGO_URL=mongodb://wapes-rocketchat-mongo:27017/rocketchat" -e "MONGO_OPLOG_URL=mongodb://wapes-rocketchat-mongo:27017/local?replSet=rs01" -e "ROOT_URL=http://wapes-rocketchat:3000" ${rocketchat}
-
-# Vaultwarden Container
-docker run -d --network wapes --restart unless-stopped --name wapes-vaultwarden -v vaultwarden:/data/ vaultwarden/server:${vaultwarden_ver}
-
-# Nginx Containter
-docker run -d --network wapes --restart unless-stopped --name wapes-nginx -v $(pwd)/nginx/ssl/wapes.crt:/etc/nginx/wapes.crt:z -v $(pwd)/nginx/ssl/wapes.key:/etc/nginx/wapes.key:z -v $(pwd)/nginx/nginx.conf:/etc/nginx/nginx.conf:z -v $(pwd)/nginx/conf.d/:/etc/nginx/conf.d/:z -v nginx:/var/log/nginx/:z -p 80:80 -p 443:443 ${nginx}
+# Bring the swarm up
 
 cat > "$CUSTOM_LIST" << EOF
 
