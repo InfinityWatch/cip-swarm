@@ -1,0 +1,226 @@
+version: '2'
+
+services:
+  dokuwiki:
+    hostname: wapes-dokuwiki
+    networks:
+      - wapes
+    restart: unless-stopped
+    image: ghcr.io/linuxserver/dokuwiki:latest
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+#    ports:
+#      - :80
+#      - :443
+    volumes:
+      - dokuwiki:/config:z
+
+  drawio:
+    hostname: wapes-draw.io
+    networks:
+      - wapes
+    restart: unless-stopped
+    image: fjudith/draw.io::latest
+#    ports:
+#      - :8080
+#      - :8443
+
+  ethercalc:
+    hostname: wapes-ethercalc
+    networks:
+      - wapes
+    restart: unless-stopped
+    image: audreyt/ethercalc:latest
+    environment:
+#    ports:
+    volumes:
+    
+  redis:
+    hostname: wapes-ethercalc-redis
+    networks: 
+      - wapes
+    restart: unless-stopped
+    image: redis:latest
+    environment:
+#    ports:
+    volumes:
+      - redis_ethercalc:/data:z
+    command: redis-server --appendonly yes
+    
+  etherpad:
+    hostname: wapes-etherpad
+    networks:
+      - wapes
+    restart: unless-stopped
+    image: tvelocity/etherpad-lite:latest
+    environment:
+#    ports:
+    volumes:
+    
+  mysql-etherpad:
+    hostname: wapes-etherpad-mysql
+    networks:
+      - wapes
+    restart: unless-stopped
+    image: mysql:5.7
+    environment:
+#    ports:
+    volumes:
+    
+  gitea:
+    hostname: wapes-gitea
+    networks:
+      - wapes
+    restart: unless-stopped
+    image: gitea/gitea:latest
+    environment:
+    ports:
+    volumes:
+    
+  mysql-gitea:
+    hostname: wapes-gitea-mysql
+    networks:
+      - wapes
+    restart: unless-stopped
+    image: mysql:5.7
+    environment:
+#    ports:
+    volumes:
+    
+  homer:
+    hostname: wapes-homer
+    networks:
+      - wapes
+    restart: unless-stopped
+    image: b4bz/homer:latest
+    environment:
+#    ports:
+    volumes:
+    
+  owncloud:
+    hostname: wapes-owncloud
+    networks:
+      - wapes
+    restart: unless-stopped
+    image: owncloud:9
+    environment:
+#    ports:
+    volumes:
+    
+  owncloud-mariadb:
+    hostname: wapes-owncloud-mariadb
+    networks:
+      - wapes
+    restart: unless-stopped
+    image: mariadb:latest
+    environment:
+#    ports:
+    volumes:
+    
+  pihole:
+    hostname: wapes-pihole
+    networks:
+      - wapes
+    restart: unless-stopped
+    image: pihole/pihole:latest
+    environment:
+    ports:
+    volumes:
+    
+  portainer:
+    hostname: wapes-portainer
+    networks:
+      - wapes
+    restart: unless-stopped
+    image: portainer/portainer:latest
+    environment:
+    ports:
+    volumes:
+    
+  rocketchat:
+    hostname: wapes-rocketchat
+    networks:
+      - wapes
+    restart: unless-stopped
+    image: registry.rocket.chat/rocketchat/rocket.chat:latest
+    environment:
+#    ports:
+    volumes:
+    
+  rocketchat-mongo:
+    hostname: wapes-rocketchat-mongo
+    networks:
+      - wapes
+    restart: unless-stopped
+    image: mongo:4.0
+    environment:
+#    ports:
+    volumes:
+    
+  vaultwarden:
+    container_name: wapes-vaultwarden
+    networks:
+      - wapes
+    restart: unless-stopped
+    image: vaultwarden/server:latest
+    environment:
+#    ports:
+    volumes:
+    
+  nginx:
+    hostname: wapes-nginx
+    networks:
+      - wapes
+    restart: unless-stopped
+    image: nginx:latest
+#    environment:
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/ssl/wapes.crt:/etc/nginx/wapes.crt:z
+      - ./nginx/ssl/wapes.key:/etc/nginx/wapes.key:z
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:z
+      - ./nginx/conf.d/:/etc/nginx/conf.d/:z
+      - nginx:/var/log/nginx/:z
+  
+
+
+volumes:
+  dokuwiki:
+    external: true
+  ethercalc_redis:
+    external: true
+  etherpad:
+    external: true
+  etherpad_mysql:
+    external: true
+  gitea:
+    external: true
+  gitea_mysql:
+    external: true
+  heimdall:
+    external: true
+  nginx:
+    external: true
+  owncloud:
+    external: true
+  owncloud_mariadb:
+    external: true
+  pihole:
+    external: true
+  portainer:
+    external: true
+  rocketchat:
+    external: true
+  rocketchat_mongo:
+    external: true
+  vaultwarden:
+    external: true
+  
+
+networks:
+  wapes:
+    external: true
