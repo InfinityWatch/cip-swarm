@@ -145,7 +145,7 @@ docker stack deploy -c portainer-compose.yml wapes-mgmt
 echo "The swarm stack takes a bit to come up. Give it a minute."
 while true
 do
-  STATUS=$(curl -sL -o /dev/null -w '%{http_code}' https://127.0.0.1)
+  STATUS=$(curl -I -k https://${DOMAIN} 2>/dev/null | head -n 1 | cut -d$' ' -f2)
   if [ ${STATUS} -eq 200 ]; then
     echo "NGINX is up. Proceeding"
     break
