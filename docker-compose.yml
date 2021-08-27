@@ -2,11 +2,10 @@ version: '3.5'
 
 services:
   dokuwiki:
+    image: ghcr.io/linuxserver/dokuwiki:latest
     hostname: wapes-dokuwiki
     networks:
       - default
-    restart: unless-stopped
-    image: ghcr.io/linuxserver/dokuwiki:latest
     environment:
       - PUID=1000
       - PGID=1000
@@ -15,18 +14,16 @@ services:
       - dokuwiki:/config:z
 
   drawio:
+    image: fjudith/draw.io:latest
     hostname: wapes-draw.io
     networks:
       - default
-    restart: unless-stopped
-    image: fjudith/draw.io:latest
 
   ethercalc:
+    image: audreyt/ethercalc:latest
     hostname: wapes-ethercalc
     networks:
       - default
-    restart: unless-stopped
-    image: audreyt/ethercalc:latest
     environment:
       - REDIS_PORT_6379_TCP_ADDR=wapes-ethercalc-redis
       - REDIS_PORT_6379_TCP_PORT=6379
@@ -34,21 +31,19 @@ services:
      - ethercalc-redis
     
   ethercalc_redis:
+    image: redis:latest
     hostname: wapes-ethercalc-redis
     networks: 
       - default
-    restart: unless-stopped
-    image: redis:latest
     volumes:
       - ethercalc_redis:/data:z
     command: redis-server --appendonly yes
     
   etherpad:
+    image: tvelocity/etherpad-lite:latest
     hostname: wapes-etherpad
     networks:
       - default
-    restart: unless-stopped
-    image: tvelocity/etherpad-lite:latest
     secrets:
       - etherpad_db
     environment:
@@ -67,11 +62,10 @@ services:
       - etherpad_db
     
   etherpad_db:
+    image: mysql:5.7
     hostname: wapes-etherpad-mysql
     networks:
       - default
-    restart: unless-stopped
-    image: mysql:5.7
     secrets:
       - etherpad_db
       - etherpad_db_root
@@ -84,11 +78,10 @@ services:
       - etherpad_mysql:/var/lib/mysql:z
     
   gitea:
+    image: gitea/gitea:latest
     hostname: wapes-gitea
     networks:
       - default
-    restart: unless-stopped
-    image: gitea/gitea:latest
     secrets:
       - gitea_db
     environment:
@@ -105,11 +98,10 @@ services:
       - gitea_db
     
   gitea_db:
+    image: mysql:5.7
     hostname: wapes-gitea-mysql
     networks:
       - default
-    restart: unless-stopped
-    image: mysql:5.7
     secrets:
       - gitea_db
       - gitea_db_root
@@ -122,11 +114,10 @@ services:
       - gitea_mysql:/var/lib/mysql:z
 
   heimdall:
+    image: linuxserver/heimdall:latest
     hostname: wapes-heimdall
     networks:
       - default
-    restart: unless-stopped
-    image: linuxserver/heimdall:latest
     environment:
       - PUID=1001
       - PGID="1001
@@ -135,31 +126,31 @@ services:
       - heimdall:/config:z
     
   homer:
+    image: b4bz/homer:latest
     hostname: wapes-homer
     networks:
       - default
-    restart: unless-stopped
-    image: b4bz/homer:latest
+    environment:
+      - UID=1000
+      - GID=1000
     volumes:
       - homer:/www/assets
     
   owncloud:
+    image: owncloud:9
     hostname: wapes-owncloud
     networks:
       - default
-    restart: unless-stopped
-    image: owncloud:9
     volumes:
       - owncloud:/var/www/html
     depends_on:
       - owncloud-mariadb
     
   owncloud-mariadb:
+    image: mariadb:latest
     hostname: wapes-owncloud-mariadb
     networks:
       - default
-    restart: unless-stopped
-    image: mariadb:latest
     secrets:
       - owncloud_db
     environment:
@@ -168,11 +159,10 @@ services:
       - owncloud_mariadb:/var/lib/mysql
     
   pihole:
+    image: pihole/pihole:latest
     hostname: wapes-pihole
     networks:
       - default
-    restart: unless-stopped
-    image: pihole/pihole:latest
     environment:
       - TZ=Etc/UTC
     ports:
@@ -183,11 +173,10 @@ services:
       - pihole_dnsmasq:/etc/dnsmasq.d:z
     
   portainer:
+    image: portainer/portainer:latest
     hostname: wapes-portainer
     networks:
       - default
-    restart: unless-stopped
-    image: portainer/portainer:latest
     ports:
       - 9000:9000
     volumes:
@@ -197,11 +186,10 @@ services:
     command: --ssl --sslcert /certs/portainer.crt --sslkey /certs/portainer.key --no-analytics
     
   rocketchat:
+    image: registry.rocket.chat/rocketchat/rocket.chat:latest
     hostname: wapes-rocketchat
     networks:
       - default
-    restart: unless-stopped
-    image: registry.rocket.chat/rocketchat/rocket.chat:latest
     environment:
       - PORT=3000
       - ROOT_URL=http://wapes-rocketchat:3000
@@ -221,11 +209,10 @@ services:
       - rocketchat_db
     
   rocketchat_db:
+    image: mongo:4.0
     hostname: wapes-rocketchat-mongo
     networks:
       - default
-    restart: unless-stopped
-    image: mongo:4.0
     volumes:
       - rocketchat_mongo:/data/db:z
       - rocketchat_mongo:/data/configdb:z
@@ -233,9 +220,9 @@ services:
     command: mongod --smallfiles --oplogSize 128 --replSet rs0 --storageEngine=mmapv1
     
   mongo-init-replica:
+    image: mongo:4.0
     networks:
       - default
-    image: mongo:4.0
     command: >
       bash -c
         "for i in `seq 1 30`; do
@@ -251,20 +238,18 @@ services:
       - rocketchat_db
     
   vaultwarden:
+    image: vaultwarden/server:latest
     hostname: wapes-vaultwarden
     networks:
       - default
-    restart: unless-stopped
-    image: vaultwarden/server:latest
     volumes:
       - vaultwarden:/data/
     
   web:
+    image: nginx:latest
     hostname: wapes-nginx
     networks:
       - default
-    restart: unless-stopped
-    image: nginx:latest
     ports:
       - 80:80
       - 443:443
@@ -311,6 +296,7 @@ volumes:
   gitea_mysql:
   heimdall:
   homer:
+  mongo_init:
   nginx:
   owncloud:
   owncloud_mariadb:

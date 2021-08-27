@@ -143,6 +143,7 @@ for i in {dokuwiki,etherpad,gitea,heimdall,mariadb_owncloud,mongo_rocketchat,mys
 
 # Bring the swarm up
 docker stack deploy -c docker-compose.yml wapes
+docker stack deploy -c portainer-compose.yml wapes-mgmt
 
 cat > "$CUSTOM_LIST" << EOF
 

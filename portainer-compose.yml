@@ -1,0 +1,23 @@
+version: '3.5'
+
+services:
+  portainer:
+    image: portainer/portainer:latest
+    hostname: wapes-portainer
+    networks:
+      - default
+    ports:
+      - 9000:9000
+    volumes:
+      - portainer:/data:z
+      - ./portainer/ssl:/certs:z
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --ssl --sslcert /certs/portainer.crt --sslkey /certs/portainer.key --no-analytics
+
+volumes:
+  portainer:
+
+networks:
+  default:
+    external: true
+    name: wapes_default
