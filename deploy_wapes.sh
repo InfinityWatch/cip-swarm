@@ -110,6 +110,7 @@ else
 	systemctl restart systemd-resolved.service
 	
 	fi
+
 	
 echo -e "\e[1;32mInstalling Docker Compose\e[0m."
 curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
@@ -125,15 +126,23 @@ usermod -aG docker "${USER_1K}"
 systemctl enable docker.service
 systemctl start docker.service
 
-# Create the WAPES network
-echo -e "\e[1;32mCreating WAPES Docker network\e[0m."
-network create --attachable --mode=swarm --subnet 172.18.0.0/16 wapes
+# Initialize swarm mode
+docker swarm init
+
+# Create docker secrets
+openssl rand -base64 12 | docker secret create etherpad_db -
+openssl rand -base64 12 | docker secret create etherpad_db_root -
+openssl rand -base64 12 | docker secret create gitea_db -
+openssl rand -base64 12 | docker secret create gitea_db_root -
+openssl rand -base64 12 | docker secret create owncloud_db -
+openssl rand -base64 12 | docker secret create owncloud_db_root -
 
 # Create Docker volumes
 echo -e "\e[1;32mCreating Docker volumes\e[0m."
 for i in {dokuwiki,etherpad,gitea,heimdall,mariadb_owncloud,mongo_rocketchat,mysql_etherpad,mysql_gitea,nginx,owncloud,pihole,pihole_dnsmasq,portainer,redis_ethercalc,rocketchat,vaultwarden}; do docker volume create $i; done
 
 # Bring the swarm up
+docker stack deploy -c docker-compose.yml wapes
 
 cat > "$CUSTOM_LIST" << EOF
 

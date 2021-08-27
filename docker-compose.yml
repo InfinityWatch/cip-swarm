@@ -11,9 +11,6 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=Etc/UTC
-#    ports:
-#      - :80
-#      - :443
     volumes:
       - dokuwiki:/config:z
 
@@ -22,10 +19,7 @@ services:
     networks:
       - default
     restart: unless-stopped
-    image: fjudith/draw.io::latest
-#    ports:
-#      - :8080
-#      - :8443
+    image: fjudith/draw.io:latest
 
   ethercalc:
     hostname: wapes-ethercalc
@@ -36,21 +30,17 @@ services:
     environment:
       - REDIS_PORT_6379_TCP_ADDR=wapes-ethercalc-redis
       - REDIS_PORT_6379_TCP_PORT=6379
-#    ports:
-    volumes:
     depends_on:
      - ethercalc-redis
     
-  ethercalc-redis:
+  ethercalc_redis:
     hostname: wapes-ethercalc-redis
     networks: 
       - default
     restart: unless-stopped
     image: redis:latest
-    environment:
-#    ports:
     volumes:
-      - redis_ethercalc:/data:z
+      - ethercalc_redis:/data:z
     command: redis-server --appendonly yes
     
   etherpad:
@@ -59,34 +49,37 @@ services:
       - default
     restart: unless-stopped
     image: tvelocity/etherpad-lite:latest
+    secrets:
+      - etherpad_db
     environment:
       - ETHERPAD_TITLE=WAPES
       - ETHERPAD_PORT=9001
-      - ETHERPAD_ADMIN_PASSWORD=${etherpad_admin_passphrase}
+      - ETHERPAD_ADMIN_PASSWORD=password
       - ETHERPAD_ADMIN_USER=admin
       - ETHERPAD_DB_TYPE=mysql
       - ETHERPAD_DB_HOST=wapes-etherpad-mysql
       - ETHERPAD_DB_USER=etherpad
-      - ETHERPAD_DB_PASSWORD=${etherpad_mysql_passphrase}
+      - ETHERPAD_DB_PASSWORD_FILE=/run/secrets/etherpad_db
       - ETHERPAD_DB_NAME=etherpad
-#    ports:
     volumes:
       - etherpad:/opt/etherpad-lite/var
     depends_on:
-      - etherpad-mysql
+      - etherpad_db
     
-  etherpad-mysql:
+  etherpad_db:
     hostname: wapes-etherpad-mysql
     networks:
       - default
     restart: unless-stopped
     image: mysql:5.7
+    secrets:
+      - etherpad_db
+      - etherpad_db_root
     environment:
       - MYSQL_DATABASE=etherpad
       - MYSQL_USER=etherpad
-      - MYSQL_PASSWORD=${etherpad_mysql_passphrase}
-      - MYSQL_RANDOM_ROOT_PASSWORD=yes
-#    ports:
+      - MYSQL_PASSWORD_FILE=/run/secrets/etherpad_db
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/etherpad_db_root
     volumes:
       - etherpad_mysql:/var/lib/mysql:z
     
@@ -96,31 +89,35 @@ services:
       - default
     restart: unless-stopped
     image: gitea/gitea:latest
+    secrets:
+      - gitea_db
     environment:
       - DB_TYPE=mysql
       - DB_HOST=wapes-gitea-mysql:3306
       - DB_NAME=gitea
       - DB_USER=gitea
-      - DB_PASSWD=${gitea_mysql_passphrase}
+      - DB_PASSWD_FILE=/run/secrets/gitea_db
     ports:
       - 8022:22
     volumes:
       - gitea:/data:z
     depends_on:
-      - gitea-mysql
+      - gitea_db
     
-  gitea-mysql:
+  gitea_db:
     hostname: wapes-gitea-mysql
     networks:
       - default
     restart: unless-stopped
     image: mysql:5.7
+    secrets:
+      - gitea_db
+      - gitea_db_root
     environment:
       - MYSQL_DATABASE=gitea
       - MYSQL_USER=gitea
-      - MYSQL_PASSWORD=${gitea_mysql_passphrase}
-      - MYSQL_RANDOM_ROOT_PASSWORD=yes
-#    ports:
+      - MYSQL_PASSWORD_FILE=/run/secrets/gitea_db
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/gitea_db_root
     volumes:
       - gitea_mysql:/var/lib/mysql:z
 
@@ -132,9 +129,8 @@ services:
     image: linuxserver/heimdall:latest
     environment:
       - PUID=1001
-      - PGID=1001
+      - PGID="1001
       - TZ=Etc/UTC
-#    ports:
     volumes:
       - heimdall:/config:z
     
@@ -144,7 +140,6 @@ services:
       - default
     restart: unless-stopped
     image: b4bz/homer:latest
-#    ports:
     volumes:
       - homer:/www/assets
     
@@ -154,7 +149,6 @@ services:
       - default
     restart: unless-stopped
     image: owncloud:9
-#    ports:
     volumes:
       - owncloud:/var/www/html
     depends_on:
@@ -166,9 +160,10 @@ services:
       - default
     restart: unless-stopped
     image: mariadb:latest
+    secrets:
+      - owncloud_db
     environment:
-      - MYSQL_ROOT_PASSWORD=${owncloud_mysql_root_passphrase}
-#    ports:
+      - MARIADB_ROOT_PASSWORD_FILE=/run/secrets/owncloud_db
     volumes:
       - owncloud_mariadb:/var/lib/mysql
     
@@ -193,7 +188,6 @@ services:
       - default
     restart: unless-stopped
     image: portainer/portainer:latest
-    environment:
     ports:
       - 9000:9000
     volumes:
@@ -213,8 +207,6 @@ services:
       - ROOT_URL=http://wapes-rocketchat:3000
       - MONGO_URL=mongodb://wapes-rocketchat-mongo:27017/rocketchat
       - MONGO_OPLOG_URL=mongodb://wapes-rocketchat-mongo:27017/local
-#    ports:
-#      - :3000
     volumes:
       - rocketchat:/app/uploads
     command: >
@@ -226,16 +218,14 @@ services:
           sleep 5;
         done; (exit $$s)"
     depends_on:
-      - rocketchat-mongo
+      - rocketchat_db
     
-  rocketchat-mongo:
+  rocketchat_db:
     hostname: wapes-rocketchat-mongo
     networks:
       - default
     restart: unless-stopped
     image: mongo:4.0
-    environment:
-#    ports:
     volumes:
       - rocketchat_mongo:/data/db:z
       - rocketchat_mongo:/data/configdb:z
@@ -243,11 +233,13 @@ services:
     command: mongod --smallfiles --oplogSize 128 --replSet rs0 --storageEngine=mmapv1
     
   mongo-init-replica:
+    networks:
+      - default
     image: mongo:4.0
     command: >
       bash -c
         "for i in `seq 1 30`; do
-          mongo mongo/rocketchat --eval \"
+          mongo wapes-rocketchat-mongo/rocketchat --eval \"
             rs.initiate({
               _id: 'rs0',
               members: [ { _id: 0, host: 'localhost:27017' } ]})\" &&
@@ -256,19 +248,18 @@ services:
           sleep 5;
         done; (exit $$s)"
     depends_on:
-      - rocketchat-mongo
+      - rocketchat_db
     
   vaultwarden:
-    container_name: wapes-vaultwarden
+    hostname: wapes-vaultwarden
     networks:
       - default
     restart: unless-stopped
     image: vaultwarden/server:latest
-#    ports:
     volumes:
       - vaultwarden:/data/
     
-  nginx:
+  web:
     hostname: wapes-nginx
     networks:
       - default
@@ -283,9 +274,33 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:z
       - ./nginx/conf.d/:/etc/nginx/conf.d/:z
       - nginx:/var/log/nginx/:z
+    depends_on:
+      - dokuwiki
+      - drawio
+      - ethercalc
+      - etherpad
+      - gitea
+      - heimdall
+      - homer
+      - owncloud
+      - pihole
+      - portainer
+      - rocketchat
+      - vaultwarden
   
 secrets:
-
+  etherpad_db:
+    external: true
+  etherpad_db_root:
+    external: true
+  gitea_db:
+    external: true
+  gitea_db_root:
+    external: true
+  owncloud_db:
+    external: true
+  owncloud_db_root:
+    external: true
 
 volumes:
   dokuwiki:
@@ -295,10 +310,12 @@ volumes:
   gitea:
   gitea_mysql:
   heimdall:
+  homer:
   nginx:
   owncloud:
   owncloud_mariadb:
   pihole:
+  pihole_dnsmasq:
   portainer:
   rocketchat:
   rocketchat_mongo:
@@ -306,4 +323,3 @@ volumes:
 
 networks:
   default:
-    external: true
