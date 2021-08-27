@@ -20,7 +20,7 @@ echo -e "${IP} ${HOSTNAME}" | tee -a /etc/hosts
 DOMAIN=wapes.local
 
 # Pihole custom lists
-CUSTOM_LIST=/var/lib/docker/volumes/pihole/_data/custom.list
+CUSTOM_LIST=/var/lib/docker/volumes/wapes_pihole/_data/custom.list
 
 # Detect the Operating System
 echo "Detecting Base OS"
@@ -144,6 +144,21 @@ for i in {dokuwiki,etherpad,gitea,heimdall,mariadb_owncloud,mongo_rocketchat,mys
 # Bring the swarm up
 docker stack deploy -c docker-compose.yml wapes
 docker stack deploy -c portainer-compose.yml wapes-mgmt
+
+# Wait for NGINX to become available
+echo "Elasticsearch takes a bit to negotiate it's cluster settings and come up. Give it a minute."
+while true
+do
+  STATUS=$(curl -sL -o /dev/null -w '%{http_code}' https://127.0.0.1)
+  if [ ${STATUS} -eq 200 ]; then
+    echo "Elasticsearch is up. Proceeding"
+    break
+  else
+    echo "Elasticsearch still loading. Trying again in 10 seconds"
+  fi
+  sleep 10
+done
+
 
 cat > "$CUSTOM_LIST" << EOF
 
