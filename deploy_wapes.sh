@@ -146,7 +146,7 @@ echo "The swarm stack takes a bit to come up. Give it a minute."
 while true
 do
   STATUS=$(curl -I -k https://${DOMAIN} 2>/dev/null | head -n 1 | cut -d$' ' -f2)
-  if [ ${STATUS} -eq 200 ]; then
+  if [ ${STATUS} == 200 ]; then
     echo "NGINX is up. Proceeding"
     break
   else
@@ -154,6 +154,10 @@ do
   fi
   sleep 10
 done
+
+PORTAINER_STATUS=$(curl -I -k https://${IP}:9000 2>/dev/null | head -n 1 | cut -d$' ' -f2)
+if [[ $PORTAINER_STATUS == 200 ]]; then echo "Portainer is accessible at https://${IP}:9000"; else echo "Portainer is not accessible"; fi
+echo
 
 # Insert A records into Pihole
 cat > "$CUSTOM_LIST" << EOF
@@ -213,9 +217,3 @@ vault.${DOMAIN} ---------> Vaultwarden
 wiki.${DOMAIN} ----------> Dokuwiki
 www.${DOMAIN} -----------> Heimdall Dashboard
 "
-PORTAINER_STATUS=$(curl -I -k https://${IP}:9000 2>/dev/null | head -n 1 | cut -d$' ' -f2)
-if [[ $PORTAINER_STATUS == 200 ]]; then echo "Portainer is accessible at https://${IP}:9000"; else echo "Portainer is not accessible"; fi
-echo
-NGINX_STATUS=$(curl -I -k https://${DOMAIN} 2>/dev/null | head -n 1 | cut -d$' ' -f2)
-if [[ $NGINX_STATUS == 200 ]]; then echo "NGINX Reverse Proxy is working!"; else echo "NGINX Reverse Proxy is NOT working, check NGINX docker logs (docker logs wapes-nginx)"; fi
-echo
