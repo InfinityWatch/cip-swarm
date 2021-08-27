@@ -147,8 +147,8 @@ echo "The NGINX wait for all other containers start so it takes a bit to come up
 while true
 do
   STATUS=$(curl -I -k https://${DOMAIN} 2>/dev/null | head -n 1 | cut -d$' ' -f2)
-  if [ ${STATUS} == 200 ]; then
-    echo "NGINX is up. Proceeding"
+  if [[ ${STATUS} == 200 ]]; then
+    echo "NGINX is up! Proceeding"
     break
   else
     echo "NGINX still loading. Trying again in 10 seconds"
@@ -157,8 +157,13 @@ do
 done
 
 PORTAINER_STATUS=$(curl -I -k https://${IP}:9000 2>/dev/null | head -n 1 | cut -d$' ' -f2)
-if [[ $PORTAINER_STATUS == 200 ]]; then echo "Portainer is accessible at https://${IP}:9000"; else echo "Portainer is not accessible"; fi
+if [[ $PORTAINER_STATUS == 200 ]]; then 
+  echo "Portainer is accessible at https://${IP}:9000"; else echo "Portainer is not accessible"; fi
 echo
+
+# Clean up swarm services and containers
+docker container prune --force
+docker service rm wapes_mongo-init-replica
 
 # Insert A records into Pihole
 cat > "$CUSTOM_LIST" << EOF
