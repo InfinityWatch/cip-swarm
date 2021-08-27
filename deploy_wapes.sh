@@ -13,11 +13,12 @@ fi
 # Set your IP address as a variable. This is for instructions below.
 IP="$(hostname -I | sed -e 's/[[:space:]]*$//' | awk '{print $1}')"
 
-# Update your Host file
-echo -e "${IP} ${HOSTNAME}" | tee -a /etc/hosts
-
 # Custom domain; default is wapes.local
 DOMAIN=wapes.local
+
+# Update your Host file
+echo -e "${IP} ${HOSTNAME}" | tee -a /etc/hosts
+echo -e "${IP} ${DOMAIN}" | tee -a /etc/hosts
 
 # Pihole custom lists
 CUSTOM_LIST=/var/lib/docker/volumes/wapes_pihole/_data/custom.list
@@ -142,7 +143,7 @@ docker stack deploy -c docker-compose.yml wapes
 docker stack deploy -c portainer-compose.yml wapes-mgmt
 
 # Wait for NGINX to become available
-echo "The swarm stack takes a bit to come up. Give it a minute."
+echo "The NGINX wait for all other containers start so it takes a bit to come up. Give it a minute."
 while true
 do
   STATUS=$(curl -I -k https://${DOMAIN} 2>/dev/null | head -n 1 | cut -d$' ' -f2)
