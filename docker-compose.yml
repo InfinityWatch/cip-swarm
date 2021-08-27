@@ -1,10 +1,10 @@
-version: '2'
+version: '3.5'
 
 services:
   dokuwiki:
     hostname: wapes-dokuwiki
     networks:
-      - wapes
+      - default
     restart: unless-stopped
     image: ghcr.io/linuxserver/dokuwiki:latest
     environment:
@@ -20,7 +20,7 @@ services:
   drawio:
     hostname: wapes-draw.io
     networks:
-      - wapes
+      - default
     restart: unless-stopped
     image: fjudith/draw.io::latest
 #    ports:
@@ -30,17 +30,21 @@ services:
   ethercalc:
     hostname: wapes-ethercalc
     networks:
-      - wapes
+      - default
     restart: unless-stopped
     image: audreyt/ethercalc:latest
     environment:
+      - REDIS_PORT_6379_TCP_ADDR=wapes-ethercalc-redis
+      - REDIS_PORT_6379_TCP_PORT=6379
 #    ports:
     volumes:
+    depends_on:
+     - ethercalc-redis
     
-  redis:
+  ethercalc-redis:
     hostname: wapes-ethercalc-redis
     networks: 
-      - wapes
+      - default
     restart: unless-stopped
     image: redis:latest
     environment:
@@ -52,130 +56,224 @@ services:
   etherpad:
     hostname: wapes-etherpad
     networks:
-      - wapes
+      - default
     restart: unless-stopped
     image: tvelocity/etherpad-lite:latest
     environment:
+      - ETHERPAD_TITLE=WAPES
+      - ETHERPAD_PORT=9001
+      - ETHERPAD_ADMIN_PASSWORD=${etherpad_admin_passphrase}
+      - ETHERPAD_ADMIN_USER=admin
+      - ETHERPAD_DB_TYPE=mysql
+      - ETHERPAD_DB_HOST=wapes-etherpad-mysql
+      - ETHERPAD_DB_USER=etherpad
+      - ETHERPAD_DB_PASSWORD=${etherpad_mysql_passphrase}
+      - ETHERPAD_DB_NAME=etherpad
 #    ports:
     volumes:
+      - etherpad:/opt/etherpad-lite/var
+    depends_on:
+      - etherpad-mysql
     
-  mysql-etherpad:
+  etherpad-mysql:
     hostname: wapes-etherpad-mysql
     networks:
-      - wapes
+      - default
     restart: unless-stopped
     image: mysql:5.7
     environment:
+      - MYSQL_DATABASE=etherpad
+      - MYSQL_USER=etherpad
+      - MYSQL_PASSWORD=${etherpad_mysql_passphrase}
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
 #    ports:
     volumes:
+      - etherpad_mysql:/var/lib/mysql:z
     
   gitea:
     hostname: wapes-gitea
     networks:
-      - wapes
+      - default
     restart: unless-stopped
     image: gitea/gitea:latest
     environment:
+      - DB_TYPE=mysql
+      - DB_HOST=wapes-gitea-mysql:3306
+      - DB_NAME=gitea
+      - DB_USER=gitea
+      - DB_PASSWD=${gitea_mysql_passphrase}
     ports:
+      - 8022:22
     volumes:
+      - gitea:/data:z
+    depends_on:
+      - gitea-mysql
     
-  mysql-gitea:
+  gitea-mysql:
     hostname: wapes-gitea-mysql
     networks:
-      - wapes
+      - default
     restart: unless-stopped
     image: mysql:5.7
     environment:
+      - MYSQL_DATABASE=gitea
+      - MYSQL_USER=gitea
+      - MYSQL_PASSWORD=${gitea_mysql_passphrase}
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
 #    ports:
     volumes:
+      - gitea_mysql:/var/lib/mysql:z
+
+  heimdall:
+    hostname: wapes-heimdall
+    networks:
+      - default
+    restart: unless-stopped
+    image: linuxserver/heimdall:latest
+    environment:
+      - PUID=1001
+      - PGID=1001
+      - TZ=Etc/UTC
+#    ports:
+    volumes:
+      - heimdall:/config:z
     
   homer:
     hostname: wapes-homer
     networks:
-      - wapes
+      - default
     restart: unless-stopped
     image: b4bz/homer:latest
-    environment:
 #    ports:
     volumes:
+      - homer:/www/assets
     
   owncloud:
     hostname: wapes-owncloud
     networks:
-      - wapes
+      - default
     restart: unless-stopped
     image: owncloud:9
-    environment:
 #    ports:
     volumes:
+      - owncloud:/var/www/html
+    depends_on:
+      - owncloud-mariadb
     
   owncloud-mariadb:
     hostname: wapes-owncloud-mariadb
     networks:
-      - wapes
+      - default
     restart: unless-stopped
     image: mariadb:latest
     environment:
+      - MYSQL_ROOT_PASSWORD=${owncloud_mysql_root_passphrase}
 #    ports:
     volumes:
+      - owncloud_mariadb:/var/lib/mysql
     
   pihole:
     hostname: wapes-pihole
     networks:
-      - wapes
+      - default
     restart: unless-stopped
     image: pihole/pihole:latest
     environment:
+      - TZ=Etc/UTC
     ports:
+      - 53:53/tcp
+      - 53:53/udp
     volumes:
+      - pihole:/etc/pihole:z
+      - pihole_dnsmasq:/etc/dnsmasq.d:z
     
   portainer:
     hostname: wapes-portainer
     networks:
-      - wapes
+      - default
     restart: unless-stopped
     image: portainer/portainer:latest
     environment:
     ports:
+      - 9000:9000
     volumes:
+      - portainer:/data:z
+      - ./portainer/ssl:/certs:z
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --ssl --sslcert /certs/portainer.crt --sslkey /certs/portainer.key --no-analytics
     
   rocketchat:
     hostname: wapes-rocketchat
     networks:
-      - wapes
+      - default
     restart: unless-stopped
     image: registry.rocket.chat/rocketchat/rocket.chat:latest
     environment:
+      - PORT=3000
+      - ROOT_URL=http://wapes-rocketchat:3000
+      - MONGO_URL=mongodb://wapes-rocketchat-mongo:27017/rocketchat
+      - MONGO_OPLOG_URL=mongodb://wapes-rocketchat-mongo:27017/local
 #    ports:
+#      - :3000
     volumes:
+      - rocketchat:/app/uploads
+    command: >
+      bash -c
+        "for i in `seq 1 30`; do
+          node main.js &&
+          s=$$? && break || s=$$?;
+          echo \"Tried $$i times. Waiting 5 secs...\";
+          sleep 5;
+        done; (exit $$s)"
+    depends_on:
+      - rocketchat-mongo
     
   rocketchat-mongo:
     hostname: wapes-rocketchat-mongo
     networks:
-      - wapes
+      - default
     restart: unless-stopped
     image: mongo:4.0
     environment:
 #    ports:
     volumes:
+      - rocketchat_mongo:/data/db:z
+      - rocketchat_mongo:/data/configdb:z
+      - rocketchat_mongo:/dump:z
+    command: mongod --smallfiles --oplogSize 128 --replSet rs0 --storageEngine=mmapv1
+    
+  mongo-init-replica:
+    image: mongo:4.0
+    command: >
+      bash -c
+        "for i in `seq 1 30`; do
+          mongo mongo/rocketchat --eval \"
+            rs.initiate({
+              _id: 'rs0',
+              members: [ { _id: 0, host: 'localhost:27017' } ]})\" &&
+          s=$$? && break || s=$$?;
+          echo \"Tried $$i times. Waiting 5 secs...\";
+          sleep 5;
+        done; (exit $$s)"
+    depends_on:
+      - rocketchat-mongo
     
   vaultwarden:
     container_name: wapes-vaultwarden
     networks:
-      - wapes
+      - default
     restart: unless-stopped
     image: vaultwarden/server:latest
-    environment:
 #    ports:
     volumes:
+      - vaultwarden:/data/
     
   nginx:
     hostname: wapes-nginx
     networks:
-      - wapes
+      - default
     restart: unless-stopped
     image: nginx:latest
-#    environment:
     ports:
       - 80:80
       - 443:443
@@ -186,41 +284,26 @@ services:
       - ./nginx/conf.d/:/etc/nginx/conf.d/:z
       - nginx:/var/log/nginx/:z
   
+secrets:
 
 
 volumes:
   dokuwiki:
-    external: true
   ethercalc_redis:
-    external: true
   etherpad:
-    external: true
   etherpad_mysql:
-    external: true
   gitea:
-    external: true
   gitea_mysql:
-    external: true
   heimdall:
-    external: true
   nginx:
-    external: true
   owncloud:
-    external: true
   owncloud_mariadb:
-    external: true
   pihole:
-    external: true
   portainer:
-    external: true
   rocketchat:
-    external: true
   rocketchat_mongo:
-    external: true
   vaultwarden:
-    external: true
-  
 
 networks:
-  wapes:
+  default:
     external: true
