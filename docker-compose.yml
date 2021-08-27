@@ -302,7 +302,6 @@ volumes:
   owncloud_mariadb:
   pihole:
   pihole_dnsmasq:
-  portainer:
   rocketchat:
   rocketchat_mongo:
   vaultwarden:

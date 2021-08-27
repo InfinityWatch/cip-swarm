@@ -130,36 +130,32 @@ systemctl start docker.service
 docker swarm init
 
 # Create docker secrets
-openssl rand -base64 12 | docker secret create etherpad_db -
-openssl rand -base64 12 | docker secret create etherpad_db_root -
-openssl rand -base64 12 | docker secret create gitea_db -
-openssl rand -base64 12 | docker secret create gitea_db_root -
-openssl rand -base64 12 | docker secret create owncloud_db -
-openssl rand -base64 12 | docker secret create owncloud_db_root -
-
-# Create Docker volumes
-echo -e "\e[1;32mCreating Docker volumes\e[0m."
-for i in {dokuwiki,etherpad,gitea,heimdall,mariadb_owncloud,mongo_rocketchat,mysql_etherpad,mysql_gitea,nginx,owncloud,pihole,pihole_dnsmasq,portainer,redis_ethercalc,rocketchat,vaultwarden}; do docker volume create $i; done
+openssl rand -base64 16 | docker secret create etherpad_db -
+openssl rand -base64 16 | docker secret create etherpad_db_root -
+openssl rand -base64 16 | docker secret create gitea_db -
+openssl rand -base64 16 | docker secret create gitea_db_root -
+openssl rand -base64 16 | docker secret create owncloud_db -
+openssl rand -base64 16 | docker secret create owncloud_db_root -
 
 # Bring the swarm up
 docker stack deploy -c docker-compose.yml wapes
 docker stack deploy -c portainer-compose.yml wapes-mgmt
 
 # Wait for NGINX to become available
-echo "Elasticsearch takes a bit to negotiate it's cluster settings and come up. Give it a minute."
+echo "The swarm stack takes a bit to come up. Give it a minute."
 while true
 do
   STATUS=$(curl -sL -o /dev/null -w '%{http_code}' https://127.0.0.1)
   if [ ${STATUS} -eq 200 ]; then
-    echo "Elasticsearch is up. Proceeding"
+    echo "NGINX is up. Proceeding"
     break
   else
-    echo "Elasticsearch still loading. Trying again in 10 seconds"
+    echo "NGINX still loading. Trying again in 10 seconds"
   fi
   sleep 10
 done
 
-
+# Insert A records into Pihole
 cat > "$CUSTOM_LIST" << EOF
 
 $IP $DOMAIN
