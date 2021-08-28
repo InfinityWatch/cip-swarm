@@ -112,7 +112,7 @@ else
 	
 	fi
 
-	
+# Install Docker-Compose	
 echo -e "\e[1;32mInstalling Docker Compose\e[0m."
 curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
@@ -131,6 +131,7 @@ systemctl start docker.service
 docker swarm init
 
 # Create docker secrets
+echo "Creating Docker Secrets"
 openssl rand -base64 16 | docker secret create etherpad_db -
 openssl rand -base64 16 | docker secret create etherpad_db_root -
 openssl rand -base64 16 | docker secret create gitea_db -
@@ -139,6 +140,7 @@ openssl rand -base64 16 | docker secret create owncloud_db -
 openssl rand -base64 16 | docker secret create owncloud_db_root -
 
 # Bring the swarm up
+echo "Beginning Swarm stack deployment"
 docker stack deploy -c docker-compose.yml wapes
 docker stack deploy -c portainer-compose.yml management
 
@@ -148,7 +150,7 @@ while true
 do
   STATUS=$(curl -I -k https://${DOMAIN} 2>/dev/null | head -n 1 | cut -d$' ' -f2)
   if [[ ${STATUS} == 200 ]]; then
-    echo "NGINX is up! Proceeding"
+    echo -e "\e[1;32mNGINX is up!  Accessible at https://${IP}\e[0m"
     break
   else
     echo "NGINX still loading. Trying again in 10 seconds"
@@ -158,14 +160,14 @@ done
 
 PORTAINER_STATUS=$(curl -I -k https://${IP}:9000 2>/dev/null | head -n 1 | cut -d$' ' -f2)
 if [[ $PORTAINER_STATUS == 200 ]]; then 
-  echo "Portainer is accessible at https://${IP}:9000"; else echo "Portainer is not accessible"; fi
+  echo -e "\e[1;32mPortainer is up! Accessible at https://${IP}:9000\e[0m"; else echo -e "\e[1;31mPortainer is not accessible\e[0m"; fi
 echo
 
-# Clean up swarm services and containers
-docker container prune --force
-docker service rm wapes_mongo-init-replica
+# Clean up orphaned swarm services and containers
+docker container prune --force 2>/dev/null
+docker service rm wapes_mongo-init-replica 2>/dev/null
 
-# Insert A records into Pihole
+# Insert DNS A records into Pihole
 cat > "$CUSTOM_LIST" << EOF
 
 $IP $DOMAIN
