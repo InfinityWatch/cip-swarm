@@ -141,8 +141,8 @@ openssl rand -base64 16 | docker secret create owncloud_db_root -
 
 # Bring the swarm up
 echo "Beginning Swarm stack deployment"
-docker stack deploy -c docker-compose.yml wapes
-docker stack deploy -c portainer-compose.yml management
+docker stack deploy -c ./docker/docker-compose.yml wapes
+docker stack deploy -c ./docker/portainer-compose.yml management
 
 # Wait for NGINX to become available
 echo "The NGINX wait for all other containers start so it takes a bit to come up. Give it a minute."
