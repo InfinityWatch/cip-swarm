@@ -164,8 +164,9 @@ if [[ $PORTAINER_STATUS == 200 ]]; then
 echo
 
 # Clean up orphaned swarm services and containers
-docker container prune --force 2>/dev/null
 docker service rm wapes_mongo-init-replica 2>/dev/null
+docker container prune --force 2>/dev/null
+docker volume prune --force 2>/dev/null
 
 # Insert DNS A records into Pihole
 cat > "$CUSTOM_LIST" << EOF
