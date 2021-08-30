@@ -17,7 +17,7 @@ services:
     volumes:
       - portainer:/data:z
       - ./portainer/ssl:/certs:z
-      - /var/run/docker.sock:/var/run/docker.sock
+#      - /var/run/docker.sock:/var/run/docker.sock
     command: --ssl --sslcert /certs/portainer.crt --sslkey /certs/portainer.key --no-analytics -H tcp://tasks.agent:9001 --tlsskipverify
 
   agent:
