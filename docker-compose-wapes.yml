@@ -311,3 +311,5 @@ volumes:
 
 networks:
   default:
+      external: true
+      name: wapes_default

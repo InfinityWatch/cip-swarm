@@ -143,6 +143,10 @@ openssl rand -base64 16 | docker secret create gitea_db_root -
 openssl rand -base64 16 | docker secret create owncloud_db -
 openssl rand -base64 16 | docker secret create owncloud_db_root -
 
+# Create the WAPES overlay swarm network
+echo -e "\e[1;32mCreating WAPES Docker network\e[0m."
+docker network create --attachable --scope swarm --driver overlay wapes_default
+
 # Bring the swarm up
 echo "Beginning Swarm stack deployment"
 docker stack deploy -c docker-compose-wapes.yml wapes
