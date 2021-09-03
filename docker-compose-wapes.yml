@@ -1,6 +1,20 @@
 version: '3.5'
 
 services:
+  dns:
+    image: adguard/adguardhome:latest
+    hostname: wapes-adguardhome
+    networks:
+      - default
+    ports:
+      - 53:53/tcp
+      - 53:53/udp
+      - 853:853/tcp
+    volumes:
+      - adguard:/opt/adguardhome/work:z
+      - adguard:/opt/adguardhome/conf:z
+    
+
   dokuwiki:
     image: ghcr.io/linuxserver/dokuwiki:latest
     hostname: wapes-dokuwiki
@@ -158,19 +172,19 @@ services:
     volumes:
       - owncloud_mariadb:/var/lib/mysql
     
-  pihole:
-    image: pihole/pihole:latest
-    hostname: wapes-pihole
-    networks:
-      - default
-    environment:
-      - TZ=Etc/UTC
-    ports:
-      - 53:53/tcp
-      - 53:53/udp
-    volumes:
-      - pihole:/etc/pihole:z
-      - pihole_dnsmasq:/etc/dnsmasq.d:z
+#  pihole:
+#    image: pihole/pihole:latest
+#    hostname: wapes-pihole
+#    networks:
+ #     - default
+#    environment:
+#      - TZ=Etc/UTC
+#    ports:
+#      - 53:53/tcp
+#      - 53:53/udp
+#    volumes:
+#      - pihole:/etc/pihole:z
+#      - pihole_dnsmasq:/etc/dnsmasq.d:z
     
   rocketchat:
     image: registry.rocket.chat/rocketchat/rocket.chat:latest
