@@ -60,6 +60,10 @@ sed -i "s/DOMAINNAME/${DOMAIN}/g" nginx/nginx.conf
 sed -i "s/IPADDRESS/${IP}/g" nginx/nginx.conf
 sed -i "s/DOMAINNAME/${DOMAIN}/g" nginx/conf.d/*.conf
 
+# Edit the hosts.txt file with IP address and domain 
+sed -i "s/DOMAINNAME/${DOMAIN}/g" adguard/hosts
+sed -i "s/IPADDRESS/${IP}/g" adguard/hosts
+
 # Create SSL certificates
 mkdir -p $(pwd)/portainer/ssl/
 mkdir -p $(pwd)/nginx/{ssl,conf.d}
