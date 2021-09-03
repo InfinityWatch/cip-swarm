@@ -21,7 +21,8 @@ echo -e "${IP} ${HOSTNAME}" | tee -a /etc/hosts
 echo -e "${IP} ${DOMAIN}" | tee -a /etc/hosts
 
 # Pihole custom lists
-CUSTOM_LIST=/var/lib/docker/volumes/wapes_pihole/_data/custom.list
+#CUSTOM_LIST=/var/lib/docker/volumes/wapes_pihole/_data/custom.list
+CUSTOM_LIST=/var/lib/docker/volumes/wapes_adguard/_data/AdGuardHome.yaml
 
 # Detect the Operating System
 echo "Detecting Base OS"
@@ -173,24 +174,27 @@ docker container prune --force 2>/dev/null
 docker volume prune --force 2>/dev/null
 
 # Insert DNS A records into Pihole
-cat > "$CUSTOM_LIST" << EOF
+#cat > "$CUSTOM_LIST" << EOF
 
-$IP $DOMAIN
-$IP calc.$DOMAIN
-$IP chat.$DOMAIN
-$IP cloud.$DOMAIN
-$IP draw.$DOMAIN
-$IP git.$DOMAIN
-$IP heimdall.$DOMAIN
-$IP homer.$DOMAIN
-$IP pad.$DOMAIN
-$IP pihole.$DOMAIN
-$IP portainer.$DOMAIN
-$IP vault.$DOMAIN
-$IP wiki.$DOMAIN
-$IP www.$DOMAIN
+#$IP $DOMAIN
+#$IP calc.$DOMAIN
+#$IP chat.$DOMAIN
+#$IP cloud.$DOMAIN
+#$IP draw.$DOMAIN
+#$IP git.$DOMAIN
+#$IP heimdall.$DOMAIN
+#$IP homer.$DOMAIN
+#$IP pad.$DOMAIN
+#$IP pihole.$DOMAIN
+#$IP portainer.$DOMAIN
+#$IP vault.$DOMAIN
+#$IP wiki.$DOMAIN
+#$IP www.$DOMAIN
 
-EOF
+#EOF
+
+sed -i '/^user_rules:.*/r adguard/hosts' $CUSTOM_LIST
+
 ################################
 ### Firewall Considerations ####
 ################################
