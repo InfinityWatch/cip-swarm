@@ -105,6 +105,7 @@ else
 	echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 	
 	apt-get -qq update
+	if [ "install ok installed" = "$(dpkg-query -W --showformat='${Status}\n' docker-ce | grep "install ok installed")" ]; then echo -e "\e[1;32mDocker-CE already installed\e[0m. Moving on..."; else echo -e "\e[1;31mDocker-CE not installed\e[0m. Installing now..." && apt-get -qq install -y docker-ce > /dev/null; fi
 	if [ "install ok installed" = "$(dpkg-query -W --showformat='${Status}\n' docker-ce-cli | grep "install ok installed")" ]; then echo -e "\e[1;32mDocker-CE CLI already installed\e[0m. Moving on..."; else echo -e "\e[1;31mDocker-CE CLI not installed\e[0m. Installing now..." && apt-get -qq install -y docker-ce-cli > /dev/null; fi
 	if [ "install ok installed" = "$(dpkg-query -W --showformat='${Status}\n' containerd.io | grep "install ok installed")" ]; then echo -e "\e[1;32mContainerd.io already installed\e[0m. Moving on..."; else echo -e "\e[1;31mContainerd.io not installed\e[0m. Installing now..." && apt-get -qq install -y containerd > /dev/null; fi
 	
