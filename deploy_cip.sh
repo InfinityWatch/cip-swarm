@@ -222,7 +222,8 @@ Please see the walkthroughs for the post-installation steps on each component.
 The CIP stack utilizes Pihole for DNS services. Point your clients or configure your DHCP pool to resolve names to \e[1;33m${IP}\e[0m.
 
 The following services are available:
-	
+
+adguard.${DOMAIN} -------> Adguard DNS Server	
 calc.${DOMAIN} ----------> Ethercalc
 chat.${DOMAIN} ----------> Rocketchat
 chef.${DOMAIN} ----------> Cyberchef
