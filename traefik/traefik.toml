@@ -1,0 +1,13 @@
+# traefik.toml
+
+# Global configuration
+
+# Entrypoints
+
+[entryPoints]
+  [entryPoints.web]
+    address = ":80"
+		
+[providers]
+  [providers.docker]
+    exposedByDefault = false
