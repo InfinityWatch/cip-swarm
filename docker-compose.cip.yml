@@ -130,17 +130,17 @@ services:
     volumes:
       - gitea_mysql:/var/lib/mysql:z
 
-  heimdall:
-    image: linuxserver/heimdall:latest
-    hostname: cip-heimdall
-    networks:
-      - default
-    environment:
-      - PUID=1001
-      - PGID="1001
-      - TZ=Etc/UTC
-    volumes:
-      - heimdall:/config:z
+#  heimdall:
+#    image: linuxserver/heimdall:latest
+#    hostname: cip-heimdall
+#    networks:
+#      - default
+#    environment:
+#      - PUID=1001
+#      - PGID="1001
+#      - TZ=Etc/UTC
+#    volumes:
+#      - heimdall:/config:z
     
   homer:
     image: b4bz/homer:latest
@@ -269,7 +269,7 @@ services:
       - ethercalc
       - etherpad
       - gitea
-      - heimdall
+#      - heimdall
       - homer
       - owncloud
       - pihole
@@ -299,7 +299,7 @@ volumes:
   etherpad_mysql:
   gitea:
   gitea_mysql:
-  heimdall:
+#  heimdall:
   homer:
   mongo_init:
   nginx:
