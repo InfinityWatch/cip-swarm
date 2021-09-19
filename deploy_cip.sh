@@ -13,15 +13,15 @@ fi
 # Set your IP address as a variable. This is for instructions below.
 IP="$(hostname -I | sed -e 's/[[:space:]]*$//' | awk '{print $1}')"
 
-# Custom domain; default is wapes.local
-DOMAIN=wapes.local
+# Custom domain; default is cip.local
+DOMAIN=cip.local
 
 # Update your Host file
 echo -e "${IP} ${HOSTNAME}" | tee -a /etc/hosts
 echo -e "${IP} ${DOMAIN}" | tee -a /etc/hosts
 
 # Pihole custom lists
-CUSTOM_LIST=/var/lib/docker/volumes/wapes_pihole/_data/custom.list
+CUSTOM_LIST=/var/lib/docker/volumes/cip_pihole/_data/custom.list
 
 # Detect the Operating System
 echo "Detecting Base OS"
@@ -68,9 +68,9 @@ sed -i "s/IPADDRESS/${IP}/g" adguard/hosts
 mkdir -p $(pwd)/portainer/ssl/
 mkdir -p $(pwd)/nginx/{ssl,conf.d}
 echo -e "\e[1;32mCreating self-signed certificate for NGINX\e[0m."
-openssl req -newkey rsa:2048 -nodes -keyout $(pwd)/nginx/ssl/wapes.key -x509 -sha256 -days 365 -out $(pwd)/nginx/ssl/wapes.crt -subj "/C=WK/ST=MOUNTAINS/L=JABARI/O=WAPES/OU=SERVICES/CN=*.${DOMAIN}"
+openssl req -newkey rsa:2048 -nodes -keyout $(pwd)/nginx/ssl/cip.key -x509 -sha256 -days 365 -out $(pwd)/nginx/ssl/cip.crt -subj "/C=WK/ST=MOUNTAINS/L=JABARI/O=CIP/OU=SERVICES/CN=*.${DOMAIN}"
 echo -e "\e[1;32mCreating self-signed certificate for Portainer\e[0m."
-openssl req -newkey rsa:2048 -nodes -keyout $(pwd)/portainer/ssl/portainer.key -x509 -sha256 -days 365 -out $(pwd)/portainer/ssl/portainer.crt -subj "/C=WK/ST=MOUNTAINS/L=JABARI/O=WAPES/OU=PORTAINER/CN=${IP}"
+openssl req -newkey rsa:2048 -nodes -keyout $(pwd)/portainer/ssl/portainer.key -x509 -sha256 -days 365 -out $(pwd)/portainer/ssl/portainer.crt -subj "/C=WK/ST=MOUNTAINS/L=JABARI/O=CIP/OU=PORTAINER/CN=${IP}"
 
 ################################
 ########### Docker #############
@@ -143,13 +143,13 @@ openssl rand -base64 16 | docker secret create gitea_db_root -
 openssl rand -base64 16 | docker secret create owncloud_db -
 openssl rand -base64 16 | docker secret create owncloud_db_root -
 
-# Create the WAPES overlay swarm network
-echo -e "\e[1;32mCreating WAPES Docker network\e[0m."
-docker network create --attachable --scope swarm --driver overlay wapes_default
+# Create the CIP overlay swarm network
+echo -e "\e[1;32mCreating CIP Docker network\e[0m."
+docker network create --attachable --scope swarm --driver overlay cip_default
 
 # Bring the swarm up
 echo "Beginning Swarm stack deployment"
-docker stack deploy -c docker-compose-wapes.yml wapes
+docker stack deploy -c docker-compose-cip.yml cip
 docker stack deploy -c docker-compose-portainer.yml portainer
 
 # Wait for NGINX to become available
@@ -172,7 +172,7 @@ if [[ $PORTAINER_STATUS == 200 ]]; then
 echo
 
 # Clean up orphaned swarm services and containers
-docker service rm wapes_mongo-init-replica 1>/dev/null
+docker service rm cip_mongo-init-replica 1>/dev/null
 docker container prune --force 1>/dev/null
 docker volume prune --force 1>/dev/null
 
@@ -214,11 +214,11 @@ EOF
 #############################################
 ######### Success Page/Quick README #########
 #############################################
-echo -e "The WAPES stack has been \e[1;32msuccessfully\e[0m deployed!
+echo -e "The CIP stack has been \e[1;32msuccessfully\e[0m deployed!
 
 Please see the walkthroughs for the post-installation steps on each component.
 
-The WAPES stack utilizes Pihole for DNS services. Point your clients or configure your DHCP pool to resolve names to \e[1;33m${IP}\e[0m.
+The CIP stack utilizes Pihole for DNS services. Point your clients or configure your DHCP pool to resolve names to \e[1;33m${IP}\e[0m.
 
 The following services are available:
 	

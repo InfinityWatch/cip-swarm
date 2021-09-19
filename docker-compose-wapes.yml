@@ -3,7 +3,7 @@ version: '3.5'
 services:
   adguardhome:
     image: adguard/adguardhome:latest
-    hostname: wapes-adguard
+    hostname: cip-adguard
     networks:
       - default
     ports:
@@ -14,13 +14,13 @@ services:
       
   cyberchef:
     image: mpepping/cyberchef:latest
-    hostname: wapes-cyberchef
+    hostname: cip-cyberchef
     networks:
       - default
 
   dokuwiki:
     image: ghcr.io/linuxserver/dokuwiki:latest
-    hostname: wapes-dokuwiki
+    hostname: cip-dokuwiki
     networks:
       - default
     environment:
@@ -32,24 +32,24 @@ services:
 
   drawio:
     image: fjudith/draw.io:latest
-    hostname: wapes-draw.io
+    hostname: cip-draw.io
     networks:
       - default
 
   ethercalc:
     image: audreyt/ethercalc:latest
-    hostname: wapes-ethercalc
+    hostname: cip-ethercalc
     networks:
       - default
     environment:
-      - REDIS_PORT_6379_TCP_ADDR=wapes-ethercalc-redis
+      - REDIS_PORT_6379_TCP_ADDR=cip-ethercalc-redis
       - REDIS_PORT_6379_TCP_PORT=6379
     depends_on:
      - ethercalc-redis
     
   ethercalc_redis:
     image: redis:latest
-    hostname: wapes-ethercalc-redis
+    hostname: cip-ethercalc-redis
     networks: 
       - default
     volumes:
@@ -58,18 +58,18 @@ services:
     
   etherpad:
     image: tvelocity/etherpad-lite:latest
-    hostname: wapes-etherpad
+    hostname: cip-etherpad
     networks:
       - default
     secrets:
       - etherpad_db
     environment:
-      - ETHERPAD_TITLE=WAPES
+      - ETHERPAD_TITLE=CIP
       - ETHERPAD_PORT=9001
       - ETHERPAD_ADMIN_PASSWORD=password
       - ETHERPAD_ADMIN_USER=admin
       - ETHERPAD_DB_TYPE=mysql
-      - ETHERPAD_DB_HOST=wapes-etherpad-mysql
+      - ETHERPAD_DB_HOST=cip-etherpad-mysql
       - ETHERPAD_DB_USER=etherpad
       - ETHERPAD_DB_PASSWORD_FILE=/run/secrets/etherpad_db
       - ETHERPAD_DB_NAME=etherpad
@@ -80,7 +80,7 @@ services:
     
   etherpad_db:
     image: mysql:5.7
-    hostname: wapes-etherpad-mysql
+    hostname: cip-etherpad-mysql
     networks:
       - default
     secrets:
@@ -96,14 +96,14 @@ services:
     
   gitea:
     image: gitea/gitea:latest
-    hostname: wapes-gitea
+    hostname: cip-gitea
     networks:
       - default
     secrets:
       - gitea_db
     environment:
       - DB_TYPE=mysql
-      - DB_HOST=wapes-gitea-mysql:3306
+      - DB_HOST=cip-gitea-mysql:3306
       - DB_NAME=gitea
       - DB_USER=gitea
       - DB_PASSWD_FILE=/run/secrets/gitea_db
@@ -116,7 +116,7 @@ services:
     
   gitea_db:
     image: mysql:5.7
-    hostname: wapes-gitea-mysql
+    hostname: cip-gitea-mysql
     networks:
       - default
     secrets:
@@ -132,7 +132,7 @@ services:
 
   heimdall:
     image: linuxserver/heimdall:latest
-    hostname: wapes-heimdall
+    hostname: cip-heimdall
     networks:
       - default
     environment:
@@ -144,7 +144,7 @@ services:
     
   homer:
     image: b4bz/homer:latest
-    hostname: wapes-homer
+    hostname: cip-homer
     networks:
       - default
     environment:
@@ -155,7 +155,7 @@ services:
     
   owncloud:
     image: owncloud:9
-    hostname: wapes-owncloud
+    hostname: cip-owncloud
     networks:
       - default
     volumes:
@@ -165,7 +165,7 @@ services:
     
   owncloud-mariadb:
     image: mariadb:latest
-    hostname: wapes-owncloud-mariadb
+    hostname: cip-owncloud-mariadb
     networks:
       - default
     secrets:
@@ -177,7 +177,7 @@ services:
     
   pihole:
     image: pihole/pihole:latest
-    hostname: wapes-pihole
+    hostname: cip-pihole
     networks:
       - default
     environment:
@@ -191,14 +191,14 @@ services:
     
   rocketchat:
     image: registry.rocket.chat/rocketchat/rocket.chat:latest
-    hostname: wapes-rocketchat
+    hostname: cip-rocketchat
     networks:
       - default
     environment:
       - PORT=3000
-      - ROOT_URL=http://wapes-rocketchat:3000
-      - MONGO_URL=mongodb://wapes-rocketchat-mongo:27017/rocketchat
-      - MONGO_OPLOG_URL=mongodb://wapes-rocketchat-mongo:27017/local
+      - ROOT_URL=http://cip-rocketchat:3000
+      - MONGO_URL=mongodb://cip-rocketchat-mongo:27017/rocketchat
+      - MONGO_OPLOG_URL=mongodb://cip-rocketchat-mongo:27017/local
     volumes:
       - rocketchat:/app/uploads
     command: >
@@ -214,7 +214,7 @@ services:
     
   rocketchat_db:
     image: mongo:4.0
-    hostname: wapes-rocketchat-mongo
+    hostname: cip-rocketchat-mongo
     networks:
       - default
     volumes:
@@ -230,7 +230,7 @@ services:
     command: >
       bash -c
         "for i in `seq 1 30`; do
-          mongo wapes-rocketchat-mongo/rocketchat --eval \"
+          mongo cip-rocketchat-mongo/rocketchat --eval \"
             rs.initiate({
               _id: 'rs0',
               members: [ { _id: 0, host: 'localhost:27017' } ]})\" &&
@@ -243,7 +243,7 @@ services:
     
   vaultwarden:
     image: vaultwarden/server:latest
-    hostname: wapes-vaultwarden
+    hostname: cip-vaultwarden
     networks:
       - default
     volumes:
@@ -251,15 +251,15 @@ services:
     
   web:
     image: nginx:latest
-    hostname: wapes-nginx
+    hostname: cip-nginx
     networks:
       - default
     ports:
       - 80:80
       - 443:443
     volumes:
-      - ./nginx/ssl/wapes.crt:/etc/nginx/wapes.crt:z
-      - ./nginx/ssl/wapes.key:/etc/nginx/wapes.key:z
+      - ./nginx/ssl/cip.crt:/etc/nginx/cip.crt:z
+      - ./nginx/ssl/cip.key:/etc/nginx/cip.key:z
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:z
       - ./nginx/conf.d/:/etc/nginx/conf.d/:z
       - nginx:/var/log/nginx/:z
@@ -314,4 +314,4 @@ volumes:
 networks:
   default:
       external: true
-      name: wapes_default
+      name: cip_default
