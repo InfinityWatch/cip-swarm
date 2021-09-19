@@ -150,8 +150,8 @@ docker network create --attachable --scope swarm --driver overlay cip_default
 
 # Bring the swarm up
 echo "Beginning Swarm stack deployment"
-docker stack deploy -c docker-compose-cip.yml cip
-docker stack deploy -c docker-compose-portainer.yml portainer
+docker stack deploy -c docker-compose.cip.yml cip
+docker stack deploy -c docker-compose.portainer.yml portainer
 
 # Wait for NGINX to become available
 echo "The NGINX wait for all other containers start so it takes a bit to come up. Give it a minute or three."
