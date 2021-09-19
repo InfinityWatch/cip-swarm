@@ -19,13 +19,6 @@ services:
       - ./portainer/ssl:/certs:z
 #      - /var/run/docker.sock:/var/run/docker.sock
     command: --ssl --sslcert /certs/portainer.crt --sslkey /certs/portainer.key --no-analytics -H tcp://tasks.agent:9001 --tlsskipverify
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=cip_default"
-      - "traefik.http.routers.portainer-secure.entrypoints=https"
-      - "traefik.http.routers.portainer-secure.rule=Host(`portainer.cip.local`)"
-      - "traefik.http.routers.portainer-secure.service=app"
-      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
 
   agent:
     image: portainer/agent:latest

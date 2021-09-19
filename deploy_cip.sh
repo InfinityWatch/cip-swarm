@@ -225,15 +225,14 @@ The following services are available:
 	
 calc.${DOMAIN} ----------> Ethercalc
 chat.${DOMAIN} ----------> Rocketchat
+chef.${DOMAIN} ----------> Cyberchef
 cloud.${DOMAIN} ---------> Owncloud
 draw.${DOMAIN} ----------> Draw.io
 git.${DOMAIN} -----------> Gitea
-heimdall.${DOMAIN} ------> Heimdall Dashboard
 homer.${DOMAIN} ---------> Homer Dashboard
 pad.${DOMAIN} -----------> Etherpad
 pihole.${DOMAIN} --------> Pihole DNS Server
 portainer.${DOMAIN} -----> Portainer Docker Container Management
 vault.${DOMAIN} ---------> Vaultwarden 
 wiki.${DOMAIN} ----------> Dokuwiki
-www.${DOMAIN} -----------> Heimdall Dashboard
 "
