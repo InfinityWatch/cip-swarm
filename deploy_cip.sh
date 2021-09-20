@@ -184,14 +184,12 @@ $IP chef.$DOMAIN
 $IP cloud.$DOMAIN
 $IP draw.$DOMAIN
 $IP git.$DOMAIN
-$IP heimdall.$DOMAIN
 $IP homer.$DOMAIN
 $IP pad.$DOMAIN
 $IP pihole.$DOMAIN
 $IP portainer.$DOMAIN
 $IP vault.$DOMAIN
 $IP wiki.$DOMAIN
-$IP www.$DOMAIN
 
 EOF
 ################################
