@@ -6,8 +6,8 @@ This a derrivative work based on the CAPES stack, particularly capes-docker foun
 ```
 sudo yum install -y git
 git clone https://github.com/InfinityWatch/cip-swarm.git
-cd wapes
-sudo bash deploy_wapes.sh
+cd cip-swarm
+sudo bash deploy_cip.sh
 ```
 After deployment, set the DNS server in your workstation to the CIP IP address or add the CIP IP address to your DHCP pool (if running one).
 
