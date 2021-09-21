@@ -5,7 +5,7 @@ This a derrivative work based on the CAPES stack, particularly capes-docker foun
 
 ```
 sudo yum install -y git
-git clone https://github.com/InfinityWatch/wapes.git
+git clone https://github.com/InfinityWatch/cip-swarm.git
 cd wapes
 sudo bash deploy_wapes.sh
 ```
