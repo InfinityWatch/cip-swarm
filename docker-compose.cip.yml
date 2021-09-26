@@ -66,8 +66,8 @@ services:
     environment:
       - ETHERPAD_TITLE=CIP
       - ETHERPAD_PORT=9001
-      - ETHERPAD_ADMIN_PASSWORD=password
-      - ETHERPAD_ADMIN_USER=admin
+#      - ETHERPAD_ADMIN_PASSWORD=password
+#      - ETHERPAD_ADMIN_USER=admin
       - ETHERPAD_DB_TYPE=mysql
       - ETHERPAD_DB_HOST=cip-etherpad-mysql
       - ETHERPAD_DB_USER=etherpad
