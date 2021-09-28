@@ -99,14 +99,12 @@ services:
     hostname: cip-gitea
     networks:
       - default
-    secrets:
-      - gitea_db
     environment:
       - DB_TYPE=mysql
       - DB_HOST=cip-gitea-mysql:3306
       - DB_NAME=gitea
       - DB_USER=gitea
-      - DB_PASSWD_FILE=/run/secrets/gitea_db
+      - DB_PASSWD=gitea
     ports:
       - 8022:22
     volumes:
@@ -125,7 +123,7 @@ services:
     environment:
       - MYSQL_DATABASE=gitea
       - MYSQL_USER=gitea
-      - MYSQL_PASSWORD_FILE=/run/secrets/gitea_db
+      - MYSQL_PASSWORD=gitea
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/gitea_db_root
     volumes:
       - gitea_mysql:/var/lib/mysql:z
