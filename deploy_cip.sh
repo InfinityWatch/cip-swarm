@@ -135,6 +135,7 @@ docker swarm init
 echo "Creating Docker Secrets"
 openssl rand -base64 16 | docker secret create etherpad_db -
 openssl rand -base64 16 | docker secret create etherpad_db_root -
+openssl rand -base64 16 | docker secret create gitea_db -
 openssl rand -base64 16 | docker secret create gitea_db_root -
 openssl rand -base64 16 | docker secret create owncloud_db -
 openssl rand -base64 16 | docker secret create owncloud_db_root -
