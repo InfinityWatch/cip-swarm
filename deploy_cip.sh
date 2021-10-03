@@ -131,11 +131,21 @@ systemctl start docker.service
 # Initialize swarm mode
 docker swarm init
 
+echo "Create a password for Gitea database"
+while true; do
+  read -s -p "Password: " gitea_db_pass
+  echo
+  read -s -p "Password (again): " gitea_db_pass2
+  echo
+  [ "$gitea_db_pass" = "$gitea_db_pass2" ] && break
+  echo "Please try again"
+done
+
 # Create docker secrets
 echo "Creating Docker Secrets"
 openssl rand -base64 16 | docker secret create etherpad_db -
 openssl rand -base64 16 | docker secret create etherpad_db_root -
-openssl rand -base64 16 | docker secret create gitea_db -
+echo $gitea_db_pass | docker secret create gitea_db -
 openssl rand -base64 16 | docker secret create gitea_db_root -
 
 # Create the CIP overlay swarm network
