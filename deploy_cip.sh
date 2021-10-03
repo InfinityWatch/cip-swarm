@@ -137,8 +137,6 @@ openssl rand -base64 16 | docker secret create etherpad_db -
 openssl rand -base64 16 | docker secret create etherpad_db_root -
 openssl rand -base64 16 | docker secret create gitea_db -
 openssl rand -base64 16 | docker secret create gitea_db_root -
-openssl rand -base64 16 | docker secret create owncloud_db -
-openssl rand -base64 16 | docker secret create owncloud_db_root -
 
 # Create the CIP overlay swarm network
 echo -e "\e[1;32mCreating CIP Docker network\e[0m."
@@ -181,7 +179,6 @@ $IP adguard.$DOMAIN
 $IP calc.$DOMAIN
 $IP chat.$DOMAIN
 $IP chef.$DOMAIN
-$IP cloud.$DOMAIN
 $IP draw.$DOMAIN
 $IP git.$DOMAIN
 $IP homer.$DOMAIN
@@ -221,7 +218,6 @@ adguard.${DOMAIN} -------> Adguard DNS Server
 calc.${DOMAIN} ----------> Ethercalc
 chat.${DOMAIN} ----------> Rocketchat
 chef.${DOMAIN} ----------> Cyberchef
-cloud.${DOMAIN} ---------> Owncloud
 draw.${DOMAIN} ----------> Draw.io
 git.${DOMAIN} -----------> Gitea
 homer.${DOMAIN} ---------> Homer Dashboard
