@@ -150,28 +150,6 @@ services:
     volumes:
       - homer:/www/assets
     
-  owncloud:
-    image: owncloud:9
-    hostname: cip-owncloud
-    networks:
-      - default
-    volumes:
-      - owncloud:/var/www/html
-    depends_on:
-      - owncloud-mariadb
-    
-  owncloud-mariadb:
-    image: mariadb:latest
-    hostname: cip-owncloud-mariadb
-    networks:
-      - default
-    secrets:
-      - owncloud_db
-    environment:
-      - MARIADB_ROOT_PASSWORD_FILE=/run/secrets/owncloud_db
-    volumes:
-      - owncloud_mariadb:/var/lib/mysql
-    
   pihole:
     image: pihole/pihole:latest
     hostname: cip-pihole
