@@ -261,10 +261,6 @@ secrets:
     external: true
   gitea_db_root:
     external: true
-  owncloud_db:
-    external: true
-  owncloud_db_root:
-    external: true
 
 volumes:
   adguard:
@@ -278,8 +274,6 @@ volumes:
   homer:
   mongo_init:
   nginx:
-  owncloud:
-  owncloud_mariadb:
   pihole:
   pihole_dnsmasq:
   rocketchat:
